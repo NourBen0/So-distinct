@@ -1,0 +1,54 @@
+[project]
+name = "sodistinct"
+version = "0.1.0"
+description = "Framework distribué pour la simulation et l’analyse de la diffusion d’informations dans les réseaux sociaux."
+authors = [
+    { name = "Ton Nom", email = "email@example.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+
+dependencies = [
+    "networkx>=3.2",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "pandas>=2.1",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "typer>=0.9",
+    "pydantic>=2.5",
+    "rich>=13.7",
+    "aiofiles>=23.2"
+]
+
+[project.optional-dependencies]
+distributed = [
+    "ray>=2.7",
+    "dask[distributed]>=2024.1",
+    "redis>=5.0"
+]
+
+dashboard = [
+    "streamlit>=1.30"
+]
+
+tests = [
+    "pytest",
+    "pytest-cov",
+    "httpx"
+]
+
+[project.urls]
+homepage = "https://github.com/username/SoDistinct"
+repository = "https://github.com/username/SoDistinct"
+
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

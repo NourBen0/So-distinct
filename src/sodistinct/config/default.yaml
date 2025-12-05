@@ -1,0 +1,48 @@
+# default.yaml - Configuration par défaut de SoDistinct
+# -----------------------------------------------------
+# Ce fichier est chargé automatiquement par settings.py
+# Il peut être surchargé par les variables d'environnement
+# SODISTINCT_* ou un fichier custom via SODISTINCT_CONFIG_PATH.
+
+runtime:
+  backend: local # "local" | "ray" | "dask"
+  num_workers: 4 # Nombre de workers CPU
+  use_gpu: false # Activation éventuelle du GPU
+  max_concurrent_runs: null # Limite des runs simultanés (null = illimité)
+
+storage:
+  data_dir: data/ # Répertoire contenant les graphes
+  results_dir: results/ # Répertoire où stocker les résultats
+  tmp_dir: tmp/ # Répertoire temporaire
+  persist_checkpoints: true # Sauvegarde des checkpoints de simulation
+  max_result_history: 50 # Nombre max d’expériences stockées localement
+
+logging:
+  level: INFO # Niveau de log : DEBUG | INFO | WARNING | ERROR
+  json_format: false # Format JSON pour ingestion système externe
+  log_file: null # null = output console ; ou chemin "logs/app.log"
+
+metadata:
+  project_name: SoDistinct
+  version: 0.1.0
+  author: "Votre Nom"
+  description: "Framework distribué pour la simulation de diffusion d'information"
+
+# Paramètres additionnels pour expérimentations et modèles
+extras:
+  random_seed: 42 # Pour reproductibilité globale
+  default_model_params:
+    ic: # Independent Cascade
+      p: 0.03
+    lt: # Linear Threshold
+      threshold: 0.2
+    si: # Susceptible → Infected
+      transmission_rate: 0.1
+    sir: # Susceptible → Infected → Recovered
+      transmission_rate: 0.1
+      recovery_rate: 0.05
+
+  experiment_defaults:
+    runs: 50 # Nombre de runs Monte-Carlo par défaut
+    graph_format: "edgelist" # Format préféré pour load/saver
+    autosave_results: true # Sauvegarde automatique en fin d'expérience

@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: sodistinct
+Version: 0.1.0
+Summary: Framework distribué pour la simulation et l’analyse de la diffusion d’informations dans les réseaux sociaux.
+Author-email: Ton Nom <email@example.com>
+License: MIT
+Project-URL: homepage, https://github.com/username/SoDistinct
+Project-URL: repository, https://github.com/username/SoDistinct
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: networkx>=3.2
+Requires-Dist: numpy>=1.26
+Requires-Dist: matplotlib>=3.8
+Requires-Dist: pandas>=2.1
+Requires-Dist: fastapi>=0.110
+Requires-Dist: uvicorn>=0.29
+Requires-Dist: typer>=0.9
+Requires-Dist: pydantic>=2.5
+Requires-Dist: rich>=13.7
+Requires-Dist: aiofiles>=23.2
+Provides-Extra: distributed
+Requires-Dist: ray>=2.7; extra == "distributed"
+Requires-Dist: dask[distributed]>=2024.1; extra == "distributed"
+Requires-Dist: redis>=5.0; extra == "distributed"
+Provides-Extra: dashboard
+Requires-Dist: streamlit>=1.30; extra == "dashboard"
+Provides-Extra: tests
+Requires-Dist: pytest; extra == "tests"
+Requires-Dist: pytest-cov; extra == "tests"
+Requires-Dist: httpx; extra == "tests"
