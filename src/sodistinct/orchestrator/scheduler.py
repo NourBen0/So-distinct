@@ -1,22 +1,3 @@
-"""
-scheduler.py
--------------
-Planificateur local (scheduler) pour organiser l’exécution des runs dans
-les orchestrateurs locaux (async & parallel).
-
-Objectifs :
-- Définir des politiques de scheduling pour choisir l’ordre d'exécution :
-    * round_robin
-    * random
-    * weighted
-    * priority-based
-- Offrir un Scheduler extensible pluggable dans :
-    * AsyncLocalOrchestrator (local_async.py)
-    * ParallelExecutor (parallel.py)
-
-Le scheduler NE lance pas les runs, il organise simplement leur ordre.
-"""
-
 from __future__ import annotations
 
 import random
@@ -24,40 +5,18 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Iterable, Optional, Callable
 
 
-# ==============================================================================
-# Job abstraction
-# ==============================================================================
 
 @dataclass(order=True)
 class ScheduledJob:
-    """
-    Représente un run de simulation à planifier.
 
-    Attributes :
-        priority   : priorité (plus petit = exécuté avant)
-        index      : index du run dans la liste originale
-        seed_set   : seeds du run
-        metadata   : informations additionnelles (optionnelles)
-    """
     priority: int
     index: int
     seed_set: Iterable[Any] = field(compare=False)
     metadata: Dict[str, Any] = field(default_factory=dict, compare=False)
 
 
-# ==============================================================================
-# Scheduler
-# ==============================================================================
 
 class Scheduler:
-    """
-    Scheduler générique avec différentes politiques.
-
-    Paramètres :
-        policy : str parmi {"round_robin", "random", "weighted", "priority"}
-        weights : dict optionnel {index: poids}
-        priorities : dict optionnel {index: priorité}
-    """
 
     def __init__(
         self,
@@ -73,9 +32,7 @@ class Scheduler:
         if policy not in valid:
             raise ValueError(f"Policy inconnue: {policy}. Options: {valid}")
 
-    # ------------------------------------------------------------------
-    # Construction des jobs
-    # ------------------------------------------------------------------
+
 
     def _build_jobs(self, seed_sets: List[Iterable[Any]]) -> List[ScheduledJob]:
         jobs = []
@@ -84,9 +41,7 @@ class Scheduler:
             jobs.append(ScheduledJob(priority=prio, index=i, seed_set=seeds))
         return jobs
 
-    # ------------------------------------------------------------------
-    # Politiques
-    # ------------------------------------------------------------------
+
 
     def _schedule_round_robin(self, jobs: List[ScheduledJob]) -> List[ScheduledJob]:
         return sorted(jobs, key=lambda j: j.index)
@@ -124,9 +79,6 @@ class Scheduler:
         """
         return sorted(jobs, key=lambda j: j.priority)
 
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     def schedule(self, seed_sets: List[Iterable[Any]]) -> List[ScheduledJob]:
         """

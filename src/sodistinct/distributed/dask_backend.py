@@ -1,16 +1,3 @@
-"""
-dask_backend.py
-----------------
-Backend distribué basé sur Dask pour exécuter des simulations SoDistinct
-sur un cluster Dask (local ou distant).
-
-Fonctionnalités :
-- Initialisation/connexion à un Dask Client
-- Scatter (broadcast) du graphe et (optionnellement) du modèle vers les workers
-- Soumission de tâches via client.submit / client.map
-- Collecte des résultats et reporting de progression
-- API simple et compatible avec SoDistinct (engine/models/graph_wrapper)
-"""
 
 from __future__ import annotations
 
@@ -19,9 +6,9 @@ from typing import List, Iterable, Dict, Any, Optional, Callable
 
 try:
     from dask.distributed import Client, as_completed
-except Exception as e:  # fallback si dask n'est pas installé
-    Client = None  # type: ignore
-    as_completed = None  # type: ignore
+except Exception as e: 
+    Client = None  
+    as_completed = None  
     _dask_import_error = e
 
 from sodistinct.core.engine import run_simulation, SimulationResult
@@ -31,14 +18,9 @@ from sodistinct.core.graph_wrapper import GraphWrapper
 logger = logging.getLogger("sodistinct.distributed.dask_backend")
 
 
-# ==============================================================================
-# Helpers d'initialisation
-# ==============================================================================
 
 def init_dask(address: Optional[str] = None, **client_kwargs) -> Any:
-    """
-    Initialise un Client Dask (local par défaut).
-    """
+
     if Client is None:
         raise RuntimeError(
             "Dask n'est pas disponible. Installez 'dask[distributed]' pour utiliser ce backend. "
@@ -56,9 +38,6 @@ def init_dask(address: Optional[str] = None, **client_kwargs) -> Any:
     return client
 
 
-# ==============================================================================
-# Tâche exécutée par les workers Dask
-# ==============================================================================
 
 def _dask_run_simulation(
     model: DiffusionModel,
@@ -70,19 +49,8 @@ def _dask_run_simulation(
     return run_simulation(model, graph, seed_set, params, rng_seed)
 
 
-# ==============================================================================
-# Backend principal Dask
-# ==============================================================================
 
 class DaskBackend:
-    """
-    Backend Dask pour exécuter de nombreuses simulations en parallèle.
-
-    Args:
-        address: adresse du scheduler Dask (None → local)
-        client: client Dask existant (optionnel)
-        scatter_graph: si True → diffusion du graphe aux workers
-    """
 
     def __init__(
         self,
@@ -108,9 +76,6 @@ class DaskBackend:
         self._scattered_graph: Optional[Any] = None  # FIX PYLANCE
         self._scattered_model: Optional[Any] = None  # FIX PYLANCE
 
-    # ----------------------------------------------------------------------
-    # Scatter (broadcast) graph/model
-    # ----------------------------------------------------------------------
 
     def _maybe_scatter_graph(self, graph: GraphWrapper) -> Any:
         if not self.scatter_graph:
@@ -134,9 +99,7 @@ class DaskBackend:
             logger.debug("Scatter du modèle impossible, utilisation directe.")
             return model
 
-    # ----------------------------------------------------------------------
-    # Exécution distribuée
-    # ----------------------------------------------------------------------
+
 
     def run_many(
         self,
@@ -154,7 +117,7 @@ class DaskBackend:
 
         futures = []
 
-        # Soumission des runs
+        
         for i, seeds in enumerate(seed_sets):
             rng_seed = base_rng_seed + i if base_rng_seed is not None else None
 
@@ -170,8 +133,8 @@ class DaskBackend:
 
         results: List[SimulationResult] = []
 
-        # Collecte asynchrone
-        if as_completed is None:  # fallback
+        
+        if as_completed is None:  
             for idx, seeds, fut in futures:
                 res = fut.result()
                 if progress_callback:
@@ -187,7 +150,7 @@ class DaskBackend:
         for completed in as_completed([f for (_, _, f) in futures]):
             res = completed.result()
 
-            # retrouver l'index (petit coût, acceptable)
+            
             idx, seeds = -1, []
             for i, s, fut in futures:
                 if fut.key == completed.key:
@@ -210,9 +173,6 @@ class DaskBackend:
 
         return results
 
-    # ----------------------------------------------------------------------
-    # Fermeture propre
-    # ----------------------------------------------------------------------
 
     def shutdown(self):
         try:
@@ -238,9 +198,6 @@ class DaskBackend:
             logger.exception("Erreur lors du shutdown DaskBackend : %s", e)
 
 
-# ==============================================================================
-# Helper simple
-# ==============================================================================
 
 def run_batch_dask(
     model: DiffusionModel,

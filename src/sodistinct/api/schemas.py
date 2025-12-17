@@ -1,16 +1,3 @@
-"""
-schemas.py
------------
-Définition des schémas Pydantic utilisés par l’API SoDistinct.
-
-Structure :
-- SimulationRequest / SimulationResponse
-- BatchSimulationRequest / BatchSimulationResponse
-- SimulationResultSchema (Pydantic wrapper)
-- MetricsRequest / MetricsResponse
-- GraphLoadRequest / GraphLoadResponse
-"""
-
 from __future__ import annotations
 
 from typing import Any, Dict, List, Iterable, Optional
@@ -25,10 +12,6 @@ from sodistinct.core.metrics import (
 )
 
 
-# ==============================================================================
-# Schemas Simulation
-# ==============================================================================
-
 class SimulationRequest(BaseModel):
     model: str = Field(..., example="ic")
     graph_path: str = Field(..., description="Chemin vers le fichier du graphe")
@@ -38,7 +21,7 @@ class SimulationRequest(BaseModel):
 
 
 class SimulationResultSchema(BaseModel):
-    """Représente un SimulationResult en format JSON."""
+    
     timeline: List[Dict[str, Any]]
     active_final: List[Any]
     steps: int
@@ -62,7 +45,7 @@ class SimulationResultSchema(BaseModel):
         )
 
     def to_result(self) -> SimulationResult:
-        """Permet de reconstruire un SimulationResult depuis Pydantic."""
+        
         return SimulationResult(
             timeline=self.timeline,
             active_final=self.active_final,
@@ -83,9 +66,6 @@ class SimulationResponse(BaseModel):
         return cls(result=SimulationResultSchema.from_result(r))
 
 
-# ==============================================================================
-# Schemas Batch Simulation
-# ==============================================================================
 
 class BatchSimulationRequest(BaseModel):
     model: str = Field(..., example="ic")
@@ -106,9 +86,6 @@ class BatchSimulationResponse(BaseModel):
         )
 
 
-# ==============================================================================
-# Schemas Metrics
-# ==============================================================================
 
 class MetricsRequest(BaseModel):
     simulation: SimulationResultSchema
@@ -169,9 +146,6 @@ class MetricsResponse(BaseModel):
         )
 
 
-# ==============================================================================
-# Schemas Graph Loading
-# ==============================================================================
 
 class GraphLoadRequest(BaseModel):
     graph_path: str

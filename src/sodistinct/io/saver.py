@@ -1,16 +1,3 @@
-"""
-saver.py
---------
-Module responsable de la sauvegarde des graphes et résultats pour SoDistinct.
-
-Fonctionnalités :
-- Sauvegarde en plusieurs formats : .edgelist, .csv, .gexf, .graphml
-- Version synchrone et asynchrone
-- Intégration directe avec GraphWrapper (NetworkX)
-- Gestion automatique des répertoires
-- Support d'options : overwrite, création automatique des dossiers
-"""
-
 from __future__ import annotations
 
 import os
@@ -29,9 +16,6 @@ logger = logging.getLogger("sodistinct.io.saver")
 SUPPORTED_SAVE_FORMATS = {".edgelist", ".txt", ".csv", ".gexf", ".graphml"}
 
 
-# -----------------------------------------------------------------------------
-# Utilitaires
-# -----------------------------------------------------------------------------
 
 def _prepare_path(path: str, overwrite: bool = False):
     p = pathlib.Path(path)
@@ -52,19 +36,10 @@ def detect_save_format(path: str) -> str:
     return ext
 
 
-# -----------------------------------------------------------------------------
-# Sauvegardes synchrones
-# -----------------------------------------------------------------------------
+
 
 def save_graph(graph: GraphWrapper, path: str, overwrite: bool = False):
-    """
-    Sauvegarde synchrone d'un graphe dans différents formats.
 
-    Paramètres :
-        graph       : GraphWrapper (NetworkX en interne)
-        path        : chemin vers le fichier de sortie
-        overwrite   : si True, écrase le fichier existant
-    """
     p = _prepare_path(path, overwrite)
     ext = detect_save_format(path)
 
@@ -111,16 +86,9 @@ def _save_csv(g: nx.Graph, path: pathlib.Path):
             )
 
 
-# -----------------------------------------------------------------------------
-# Sauvegardes asynchrones
-# -----------------------------------------------------------------------------
 
 async def save_graph_async(graph: GraphWrapper, path: str, overwrite: bool = False):
-    """
-    Sauvegarde asynchrone d'un graphe.
-    Utilise aiofiles pour les formats textuels.
-    Pour GEXF/GraphML (NetworkX), fallback vers thread executor.
-    """
+
     p = _prepare_path(path, overwrite)
     ext = detect_save_format(path)
 
@@ -128,7 +96,6 @@ async def save_graph_async(graph: GraphWrapper, path: str, overwrite: bool = Fal
 
     logger.info(f"[async] Sauvegarde du graphe vers '{path}' (format {ext})")
 
-    # Formats NX non compatibles async → fallback thread
     if ext in {".gexf", ".graphml"}:
         import asyncio
         loop = asyncio.get_running_loop()
@@ -158,9 +125,7 @@ async def _save_edgelist_async(g: nx.Graph, path: pathlib.Path):
 
 
 async def _save_csv_async(g: nx.Graph, path: pathlib.Path):
-    """
-    Sauvegarde CSV asynchrone (écriture manuelle car CSV module n’est pas async).
-    """
+
     async with aiofiles.open(path, "w", encoding="utf-8") as f:
         await f.write("source,target,weight\n")
         for u, v, data in g.edges(data=True):
@@ -168,14 +133,8 @@ async def _save_csv_async(g: nx.Graph, path: pathlib.Path):
             await f.write(f"{u},{v},{w}\n")
 
 
-# -----------------------------------------------------------------------------
-# Wrapper unifié
-# -----------------------------------------------------------------------------
-
 def save_any(graph: GraphWrapper, path: str, async_mode: bool = False, overwrite: bool = False):
-    """
-    Wrapper pratique : save sync ou async.
-    """
+
     if async_mode:
         import asyncio
         return asyncio.run(save_graph_async(graph, path, overwrite=overwrite))

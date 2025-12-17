@@ -1,23 +1,3 @@
-"""
-parallel.py
-------------
-Orchestrateur parallèle synchrone basé sur ThreadPoolExecutor
-ou ProcessPoolExecutor.
-
-Objectif :
-- Fournir une alternative à local_async.py pour exécuter des simulations
-  en parallèle **sans asyncio**.
-- Utilisé pour :
-    * CLI
-    * Benchmarks (bench/)
-    * Tests de performance
-    * Expérimentations massives localisées
-
-API :
-    ParallelExecutor(...)
-    executor.run_many(...)
-    executor.map_runs(...)
-"""
 
 from __future__ import annotations
 
@@ -32,20 +12,9 @@ from sodistinct.core.graph_wrapper import GraphWrapper
 logger = logging.getLogger("sodistinct.orchestrator.parallel")
 
 
-# ==============================================================================
-# Parallel Executor
-# ==============================================================================
 
 class ParallelExecutor:
-    """
-    Exécute plusieurs simulations en parallèle via futures.
 
-    Paramètres :
-        max_workers      : nombre de workers
-        use_processes    : True → ProcessPoolExecutor (CPU bound)
-                           False → ThreadPoolExecutor (I/O bound)
-        progress_callback : fonction appelée après chaque run (optionnel)
-    """
 
     def __init__(
         self,
@@ -65,17 +34,13 @@ class ParallelExecutor:
 
         self._cancel_flag = False
 
-    # ----------------------------------------------------------------------
-    # Annulation
-    # ----------------------------------------------------------------------
+    
 
     def cancel(self):
         logger.warning("Annulation déclenchée — les futures restantes seront ignorées.")
         self._cancel_flag = True
 
-    # ----------------------------------------------------------------------
-    # Exécution d’une liste de seed-sets
-    # ----------------------------------------------------------------------
+    
 
     def run_many(
         self,
@@ -85,12 +50,7 @@ class ParallelExecutor:
         params: Dict[str, Any],
         base_rng_seed: Optional[int] = None,
     ) -> List[SimulationResult]:
-        """
-        Exécute N runs en parallèle.
 
-        Retour :
-            Liste de SimulationResult
-        """
 
         futures = []
         results = []
@@ -133,25 +93,13 @@ class ParallelExecutor:
 
         return results
 
-    # ----------------------------------------------------------------------
-    # Mapping parallèle simple
-    # ----------------------------------------------------------------------
-
+    
     def map_runs(
         self,
         fn: Callable[..., Any],
         args_list: List[Dict[str, Any]],
     ) -> List[Any]:
-        """
-        Exécute en parallèle une fonction générique.
 
-        args_list = [
-            {"arg1": ..., "arg2": ...},
-            ...
-        ]
-
-        Retour : liste des résultats
-        """
         results = []
         futures = []
 
@@ -167,19 +115,13 @@ class ParallelExecutor:
             results.append(fut.result())
 
         return results
-
-    # ----------------------------------------------------------------------
-    # Fermeture propre
-    # ----------------------------------------------------------------------
-
+ 
     def shutdown(self):
         logger.info("Fermeture du ParallelExecutor.")
         self._executor.shutdown(wait=True)
 
 
-# ==============================================================================
-# Helper très simple (API minimaliste)
-# ==============================================================================
+
 
 def run_batch_parallel(
     model: DiffusionModel,
@@ -190,9 +132,7 @@ def run_batch_parallel(
     use_processes: bool = True,
     progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> List[SimulationResult]:
-    """
-    Helper simple pour exécuter un batch sans instancier manuellement l'executor.
-    """
+    
     executor = ParallelExecutor(
         max_workers=max_workers,
         use_processes=use_processes,

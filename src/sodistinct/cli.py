@@ -1,16 +1,3 @@
-"""
-cli.py
--------
-CLI officielle de SoDistinct, basée sur Typer.
-
-Commandes :
-    sodistinct run         → exécuter une simulation simple
-    sodistinct batch       → exécuter plusieurs simulations
-    sodistinct graph-info  → analyser un graphe
-    sodistinct save-result → sauvegarder un résultat
-    sodistinct load-result → charger un résultat
-"""
-
 import json
 from pathlib import Path
 from typing import Optional, List, Any

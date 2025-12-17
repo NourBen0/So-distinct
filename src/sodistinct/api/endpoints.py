@@ -1,17 +1,3 @@
-"""
-endpoints.py
--------------
-Définition des routes de l’API SoDistinct.
-
-Contient :
-- /simulate        : exécuter une simulation unique
-- /simulate/batch  : exécuter plusieurs simulations (async orchestrator)
-- /metrics         : calculer des métriques
-- /graph/load      : charger un graphe depuis un fichier
-
-Cette API fait le lien entre le moteur (engine.py), les modèles,
-les orchestrateurs locaux (local_async / parallel), et les schémas Pydantic.
-"""
 
 from __future__ import annotations
 
@@ -46,9 +32,6 @@ logger = logging.getLogger("sodistinct.api.endpoints")
 router = APIRouter(tags=["simulation"])
 
 
-# ============================================================================
-# Helpers internes
-# ============================================================================
 
 _MODEL_REGISTRY = {
     "si": SIModel,
@@ -76,9 +59,6 @@ def load_graph_wrapper(path: str) -> GraphWrapper:
         raise HTTPException(500, f"Erreur chargement graphe: {e}")
 
 
-# ============================================================================
-# Route : Simulation simple
-# ============================================================================
 
 @router.post("/simulate", response_model=SimulationResponse)
 async def simulate(req: SimulationRequest):
@@ -104,15 +84,9 @@ async def simulate(req: SimulationRequest):
     return SimulationResponse.from_result(result)
 
 
-# ============================================================================
-# Route : Batch de simulations (async orchestrator)
-# ============================================================================
-
 @router.post("/simulate/batch", response_model=BatchSimulationResponse)
 async def simulate_batch(req: BatchSimulationRequest):
-    """
-    Exécute un batch de simulations en parallèle local via AsyncLocalOrchestrator.
-    """
+
     model = get_model(req.model)
     graph = load_graph_wrapper(req.graph_path)
 
@@ -132,15 +106,10 @@ async def simulate_batch(req: BatchSimulationRequest):
     return BatchSimulationResponse.from_results(results)
 
 
-# ============================================================================
-# Route : Calcul de métriques
-# ============================================================================
 
 @router.post("/metrics", response_model=MetricsResponse)
 def compute_metrics(req: MetricsRequest):
-    """
-    Calcule les métriques (couverture, vitesse, reach-time, influence).
-    """
+
     try:
         metrics = compute_all_metrics(req.simulation.to_result(), req.total_nodes)
     except Exception as e:
@@ -150,15 +119,9 @@ def compute_metrics(req: MetricsRequest):
     return MetricsResponse.from_metrics(metrics)
 
 
-# ============================================================================
-# Route : Chargement d’un graphe
-# ============================================================================
-
 @router.post("/graph/load", response_model=GraphLoadResponse)
 def load_graph_api(req: GraphLoadRequest):
-    """
-    Charge un graphe et renvoie infos basiques.
-    """
+
     graph = load_graph_wrapper(req.graph_path)
     nxg = graph.to_networkx()
 

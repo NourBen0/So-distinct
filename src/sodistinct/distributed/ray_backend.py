@@ -1,16 +1,3 @@
-"""
-ray_backend.py
----------------
-Backend distribué basé sur Ray pour exécuter des simulations SoDistinct
-sur un cluster local ou distant.
-
-Fonctionnalités :
-- Exécution distribuée de milliers de runs
-- Support des Ray Tasks (stateless) et Ray Actors (stateful)
-- Batching intelligent
-- Gestion automatique du cluster et des ressources
-"""
-
 from __future__ import annotations
 
 import ray
@@ -23,22 +10,8 @@ from sodistinct.core.graph_wrapper import GraphWrapper
 
 logger = logging.getLogger("sodistinct.distributed.ray_backend")
 
-
-# ==================================================================================
-# Initialisation Ray
-# ==================================================================================
-
 def init_ray(address: Optional[str] = None, num_cpus: Optional[int] = None):
-    """
-    Initialise Ray si ce n'est pas déjà fait.
 
-    Args:
-        address: adresse du cluster Ray (None → local mode)
-        num_cpus: limite du nombre de CPUs locaux
-
-    Returns:
-        True si Ray vient d'être initialisé, False sinon.
-    """
     if ray.is_initialized():
         return False
 
@@ -46,10 +19,6 @@ def init_ray(address: Optional[str] = None, num_cpus: Optional[int] = None):
     logger.info(f"Ray initialisé (address={address}, num_cpus={num_cpus})")
     return True
 
-
-# ==================================================================================
-# Ray Task (stateless)
-# ==================================================================================
 
 @ray.remote
 def _ray_run_simulation(
@@ -63,16 +32,9 @@ def _ray_run_simulation(
     return run_simulation(model, graph, seed_set, params, rng_seed)
 
 
-# ==================================================================================
-# Ray Actor (stateful) — utile quand modèle/graphes sont volumineux
-# ==================================================================================
 
 @ray.remote
 class SimulationActor:
-    """
-    Actor Ray optimisé : le modèle et le graphe sont chargés une seule fois.
-    Toutes les simulations s'exécutent localement dans l’acteur.
-    """
 
     def __init__(self, model: DiffusionModel, graph: GraphWrapper):
         self.model = model
@@ -82,20 +44,8 @@ class SimulationActor:
         return run_simulation(self.model, self.graph, seed_set, params, rng_seed)
 
 
-# ==================================================================================
-# Backend principal Ray
-# ==================================================================================
-
 class RayBackend:
-    """
-    Backend distribué Ray pour exécuter un grand nombre de simulations.
 
-    Paramètres :
-        use_actors     : si True → un pool d'acteurs pour réutiliser modèle+graphe
-        num_actors     : nombre d'acteurs à utiliser (si use_actors)
-        address        : None → local ; string → cluster Ray
-        num_cpus       : limite CPU locale ou cluster
-    """
 
     def __init__(
         self,
@@ -109,15 +59,13 @@ class RayBackend:
         self.address = address
         self.num_cpus = num_cpus
 
-        # Initialisation Ray
+        
         init_ray(address=address, num_cpus=num_cpus)
 
-        # Pool d'acteurs si besoin
+       
         self.actors = []
 
-    # ----------------------------------------------------------------------
-    # Construction du pool d'acteurs
-    # ----------------------------------------------------------------------
+ 
 
     def _ensure_actors(self, model: DiffusionModel, graph: GraphWrapper):
         """Crée un pool d'acteurs si nécessaire."""
@@ -130,9 +78,7 @@ class RayBackend:
             for _ in range(self.num_actors)
         ]
 
-    # ----------------------------------------------------------------------
-    # Exécution distribuée
-    # ----------------------------------------------------------------------
+
 
     def run_many(
         self,
@@ -143,18 +89,12 @@ class RayBackend:
         base_rng_seed: Optional[int] = None,
         progress_callback: Optional[callable] = None,
     ) -> List[SimulationResult]:
-        """
-        Exécute un grand nombre de simulations distribuées sur Ray.
-
-        Retour :
-            Liste de SimulationResult
-        """
+     
 
         self._ensure_actors(model, graph)
 
         futures = []
 
-        # --- Cas 1 : utilisation d'acteurs ---
         if self.use_actors:
             logger.info(f"Distribution via {self.num_actors} acteurs Ray.")
 
@@ -164,7 +104,6 @@ class RayBackend:
                 fut = actor.run.remote(seeds, params, rng_seed)
                 futures.append((i, seeds, fut))
 
-        # --- Cas 2 : simples Ray tasks ---
         else:
             logger.info("Distribution via Ray Tasks.")
 
@@ -173,7 +112,6 @@ class RayBackend:
                 fut = _ray_run_simulation.remote(model, graph, seeds, params, rng_seed)
                 futures.append((i, seeds, fut))
 
-        # --- Collecte asynchrone ---
         results = []
         for idx, seeds, fut in futures:
             res: SimulationResult = ray.get(fut)
@@ -195,9 +133,6 @@ class RayBackend:
         return results
 
 
-# ==================================================================================
-# Helper simple (API)
-# ==================================================================================
 
 def run_batch_ray(
     model: DiffusionModel,
@@ -210,9 +145,7 @@ def run_batch_ray(
     num_cpus: Optional[int] = None,
     progress_callback: Optional[callable] = None,
 ) -> List[SimulationResult]:
-    """
-    Helper simplifié pour exécuter un batch complet de simulations via Ray.
-    """
+
     backend = RayBackend(
         use_actors=use_actors,
         num_actors=num_actors,

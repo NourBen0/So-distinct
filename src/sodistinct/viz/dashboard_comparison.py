@@ -40,9 +40,7 @@ except ImportError:
 
 st.set_page_config(page_title="SoDistinct - Comparaison Performances", layout="wide")
 
-# ============================================================================
-# Configuration
-# ============================================================================
+
 
 st.title("⚡ SoDistinct - Comparaison des Modes d'Exécution")
 st.markdown("**Comparez visuellement les performances de tous les backends !**")
@@ -51,9 +49,7 @@ if not CORE_AVAILABLE:
     st.error("❌ Impossible de charger les modules core de SoDistinct")
     st.stop()
 
-# ============================================================================
-# Configuration avancée - VERSION AMÉLIORÉE
-# ============================================================================
+
 
 with st.sidebar.expander("⚙️ Paramètres Avancés - CRITIQUES"):
     st.write("**🚨 PROBLÈME : Les simulations sont trop rapides !**")
@@ -107,10 +103,6 @@ if RAY_AVAILABLE:
 else:
     st.sidebar.info("ℹ️ Ray non disponible")
 
-# ============================================================================
-# Générateur de réseaux BEAUCOUP plus GROS
-# ============================================================================
-
 def creer_reseau_test(taille: str) -> GraphWrapper:
     """Crée un réseau de test selon la taille demandée - VERSION AGRANDIE"""
     if taille == "Petit (50 nœuds)":
@@ -137,9 +129,6 @@ def generer_seeds_sets(graph: GraphWrapper, n_sets: int) -> List[List[int]]:
     
     return seed_sets
 
-# ============================================================================
-# MODÈLE PERSONNALISÉ - SIMULATIONS RALENTIES
-# ============================================================================
 
 class SlowICModel(ICModel):
     """
@@ -161,9 +150,6 @@ class SlowICModel(ICModel):
         
         return new_state
 
-# ============================================================================
-# Fonctions de test OPTIMISÉES pour voir la différence
-# ============================================================================
 
 def tester_sequentiel(graph: GraphWrapper, seed_sets: List[List[int]]) -> Tuple[float, List[float]]:
     """Test séquentiel - VERSION RALENTIE"""
@@ -267,9 +253,6 @@ def tester_ray(graph: GraphWrapper, seed_sets: List[List[int]]) -> Tuple[float, 
         st.error(f"❌ Erreur Ray: {e}")
         return 0, []
 
-# ============================================================================
-# Visualisations
-# ============================================================================
 
 def plot_comparaison_temps(total_times: Dict[str, float]):
     """Graphique comparatif des temps totaux"""
@@ -336,9 +319,6 @@ def plot_speedup(total_times: Dict[str, float]):
     plt.tight_layout()
     return fig
 
-# ============================================================================
-# Interface principale
-# ============================================================================
 
 if st.sidebar.button("🚀 Lancer la Comparaison", type="primary"):
     

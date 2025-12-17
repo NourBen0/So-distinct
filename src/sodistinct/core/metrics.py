@@ -1,11 +1,3 @@
-"""
-metrics.py — VERSION COMPLÉTÉE
-Inclut :
-- compute_* (SoDistinct)
-- coverage(), cascade_size(), reach_time(), centralities, average_path_length
-pour compatibilité avec l'ancien système de tests.
-"""
-
 from __future__ import annotations
 
 from typing import Dict, Any, Iterable, Optional
@@ -16,11 +8,6 @@ import networkx as nx
 
 from sodistinct.core.engine import SimulationResult
 from sodistinct.core.graph_wrapper import GraphWrapper
-
-
-# ============================================================================
-# --- MÉTRIQUES SoDistinct OFFICIELLES ----------------------------------------------------------
-# ============================================================================
 
 @dataclass
 class CoverageMetrics:
@@ -125,12 +112,8 @@ def compute_all_metrics(result: SimulationResult, total_nodes: int) -> Dict[str,
     }
 
 
-# ============================================================================
-# --- MÉTRIQUES POUR COMPATIBILITÉ AVEC L’ANCIEN TEST --------------------------------------------
-# ============================================================================
 
 def coverage(graph: GraphWrapper, active: Iterable[Any]) -> float:
-    """Compatibilité : couverture = |active| / |V|"""
     total = graph.number_of_nodes()
     if total == 0:
         return 0.0
@@ -138,12 +121,10 @@ def coverage(graph: GraphWrapper, active: Iterable[Any]) -> float:
 
 
 def cascade_size(active: Iterable[Any]) -> int:
-    """Taille de la cascade = nombre d'activés"""
     return len(active)
 
 
 def reach_time(timeline, node):
-    """Retourne le premier step où un node apparaît dans new_active"""
     for step in timeline:
         if node in step["new_active"]:
             return step["step"]
@@ -151,7 +132,6 @@ def reach_time(timeline, node):
 
 
 def degree_centrality(graph: GraphWrapper):
-    """Centralité en degré (NetworkX)"""
     g = graph.unwrap()
     if g.number_of_nodes() == 0:
         return {}
@@ -159,7 +139,6 @@ def degree_centrality(graph: GraphWrapper):
 
 
 def closeness_centrality(graph: GraphWrapper):
-    """Centralité de proximité"""
     g = graph.unwrap()
     if g.number_of_nodes() == 0:
         return {}
@@ -167,7 +146,6 @@ def closeness_centrality(graph: GraphWrapper):
 
 
 def betweenness_centrality(graph: GraphWrapper):
-    """Centralité d'intermédiarité"""
     g = graph.unwrap()
     if g.number_of_nodes() == 0:
         return {}
@@ -175,7 +153,6 @@ def betweenness_centrality(graph: GraphWrapper):
 
 
 def average_path_length(graph: GraphWrapper):
-    """Longueur moyenne des plus courts chemins"""
     g = graph.unwrap()
     if g.number_of_nodes() == 0:
         return 0.0

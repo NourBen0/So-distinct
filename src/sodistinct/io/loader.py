@@ -1,26 +1,3 @@
-"""
-loader.py
----------
-Module de chargement des graphes pour SoDistinct.
-
-Fonctionnalités :
-- Lecture de graphes depuis différents formats (edge-list, CSV, GEXF, GraphML).
-- Chargement synchrone et asynchrone (utilisant aiofiles).
-- Intégration directe avec GraphWrapper (NetworkX ou iGraph).
-- Validation de format & gestion d'erreurs propre.
-- Auto-détection du format selon l'extension du fichier.
-
-Formats supportés :
-- .edgelist / .txt
-- .csv (source,target,weight?)
-- .gexf
-- .graphml / .xml
-
-Usage :
-    from sodistinct.io.loader import load_graph, load_graph_async
-    graph = load_graph("data/network.edgelist")
-"""
-
 from __future__ import annotations
 
 import os
@@ -37,9 +14,7 @@ from sodistinct.core.graph_wrapper import GraphWrapper
 logger = logging.getLogger("sodistinct.io.loader")
 
 
-# ---------------------------------------------------------------------------
-# Détection automatique du format
-# ---------------------------------------------------------------------------
+
 
 SUPPORTED_FORMATS = {".edgelist", ".txt", ".csv", ".gexf", ".graphml", ".xml"}
 
@@ -53,15 +28,9 @@ def detect_format(path: str) -> str:
     return ext
 
 
-# ---------------------------------------------------------------------------
-# Lectures synchrones
-# ---------------------------------------------------------------------------
 
 def load_graph(path: str) -> GraphWrapper:
-    """
-    Charge un graphe depuis un fichier (synchrone).
-    Renvoie un GraphWrapper compatible SoDistinct.
-    """
+
     if not os.path.exists(path):
         raise FileNotFoundError(f"Fichier introuvable : {path}")
 
@@ -83,35 +52,26 @@ def load_graph(path: str) -> GraphWrapper:
     return GraphWrapper(g)
 
 
-# ---------------------------------------------------------------------------
-# Lectures asynchrones
-# ---------------------------------------------------------------------------
 
 async def load_graph_async(path: str) -> GraphWrapper:
-    """
-    Version asynchrone du chargement.
-    Utilise aiofiles pour éviter de bloquer un event-loop asyncio lors de lectures lourdes.
-    """
+   
     if not os.path.exists(path):
         raise FileNotFoundError(f"Fichier introuvable : {path}")
 
     ext = detect_format(path)
     logger.info(f"[async] Chargement du graphe depuis '{path}' (format {ext})")
 
-    # Formats NX nativement synchrone → fallback dans thread executor
     if ext in {".gexf", ".graphml", ".xml"}:
         import asyncio
         loop = asyncio.get_running_loop()
         g = await loop.run_in_executor(None, lambda: load_graph(path))
         return g
 
-    # Edge-list et CSV : on peut parse nous-même asynchronement
     if ext in {".edgelist", ".txt"}:
         g = await _load_edgelist_async(path)
     elif ext == ".csv":
         g = await _load_csv_async(path)
     else:
-        # fallback
         import asyncio
         loop = asyncio.get_running_loop()
         g = await loop.run_in_executor(None, lambda: load_graph(path))
@@ -121,9 +81,6 @@ async def load_graph_async(path: str) -> GraphWrapper:
     return GraphWrapper(g)
 
 
-# ---------------------------------------------------------------------------
-# Implémentations synchones
-# ---------------------------------------------------------------------------
 
 def _load_edgelist(path: str) -> nx.Graph:
     g = nx.Graph()
@@ -168,9 +125,6 @@ def _load_csv(path: str) -> nx.Graph:
     return g
 
 
-# ---------------------------------------------------------------------------
-# Implémentations asynchrones
-# ---------------------------------------------------------------------------
 
 async def _load_edgelist_async(path: str) -> nx.Graph:
     g = nx.Graph()
@@ -193,7 +147,6 @@ async def _load_edgelist_async(path: str) -> nx.Graph:
 
 
 async def _load_csv_async(path: str) -> nx.Graph:
-    # aiofiles ne supporte pas CSV directement -> lecture manuelle
     g = nx.Graph()
     async with aiofiles.open(path, "r", encoding="utf-8") as f:
         header = await f.readline()
@@ -222,17 +175,12 @@ async def _load_csv_async(path: str) -> nx.Graph:
     return g
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def is_graph_file(path: str) -> bool:
-    """Vérifie si le fichier ressemble à un fichier de graphe supporté."""
     return pathlib.Path(path).suffix.lower() in SUPPORTED_FORMATS
 
 
 def load_any(path: str, async_mode: bool = False):
-    """Wrapper pratique : charge en mode sync ou async selon flag."""
     if async_mode:
         import asyncio
         return asyncio.run(load_graph_async(path))

@@ -1,15 +1,3 @@
-"""
-persistence.py
----------------
-Gestion centralisée de la persistance dans SoDistinct :
-- Sauvegarde/chargement de SimulationResult
-- Checkpoints des simulations/batchs
-- Cache local (pickle)
-- Support optionnel Redis si installé
-
-Basé sur settings.storage.*
-"""
-
 from __future__ import annotations
 
 import pickle
@@ -31,9 +19,7 @@ except Exception:
     redis = None
 
 
-# ==============================================================================
-# Répertoires
-# ==============================================================================
+
 
 DATA_DIR = Path(settings.storage.data_dir)
 RESULTS_DIR = Path(settings.storage.results_dir)
@@ -43,18 +29,15 @@ for d in (DATA_DIR, RESULTS_DIR, TMP_DIR):
     d.mkdir(parents=True, exist_ok=True)
 
 
-# ==============================================================================
-# Cache local (pickle)
-# ==============================================================================
 
 def _cache_path(key: str) -> Path:
-    """Retourne le chemin du fichier cache associé à une clé."""
+    
     safe_key = key.replace("/", "_")
     return TMP_DIR / f"cache_{safe_key}.pkl"
 
 
 def cache_set(key: str, value: Any):
-    """Stocke un objet dans le cache disque."""
+    
     path = _cache_path(key)
     try:
         with open(path, "wb") as f:
@@ -65,7 +48,7 @@ def cache_set(key: str, value: Any):
 
 
 def cache_get(key: str) -> Optional[Any]:
-    """Récupère un objet depuis le cache disque."""
+    
     path = _cache_path(key)
     if not path.exists():
         return None
@@ -77,12 +60,10 @@ def cache_get(key: str) -> Optional[Any]:
         return None
 
 
-# ==============================================================================
-# Cache Redis (optionnel)
-# ==============================================================================
+
 
 def get_redis_client() -> Optional[Any]:
-    """Retourne un client Redis si disponible."""
+    
     if redis is None:
         return None
 
@@ -118,14 +99,10 @@ def redis_get(key: str) -> Optional[Any]:
         return None
 
 
-# ==============================================================================
-# Sauvegarde / Chargement de SimulationResult
-# ==============================================================================
+
 
 def save_result(result: SimulationResult, name: Optional[str] = None) -> Path:
-    """
-    Sauvegarde un SimulationResult sous forme pickle.
-    """
+
     if name is None:
         ts = int(time.time())
         name = f"result_{result.model_name}_{ts}.pkl"
@@ -139,9 +116,7 @@ def save_result(result: SimulationResult, name: Optional[str] = None) -> Path:
 
 
 def load_result(path: str | Path) -> SimulationResult:
-    """
-    Charge un SimulationResult sauvegardé.
-    """
+  
     path = Path(path)
     with open(path, "rb") as f:
         result = pickle.load(f)
@@ -149,14 +124,9 @@ def load_result(path: str | Path) -> SimulationResult:
     return result
 
 
-# ==============================================================================
-# Checkpoints
-# ==============================================================================
 
 def save_checkpoint(data: Any, name: str = "checkpoint.pkl") -> Path:
-    """
-    Sauvegarde un checkpoint (pickle) dans TMP_DIR.
-    """
+
     path = TMP_DIR / name
     try:
         with open(path, "wb") as f:
@@ -169,9 +139,7 @@ def save_checkpoint(data: Any, name: str = "checkpoint.pkl") -> Path:
 
 
 def load_checkpoint(name: str = "checkpoint.pkl") -> Optional[Any]:
-    """
-    Charge un checkpoint si disponible.
-    """
+
     path = TMP_DIR / name
     if not path.exists():
         return None
@@ -184,15 +152,10 @@ def load_checkpoint(name: str = "checkpoint.pkl") -> Optional[Any]:
         return None
 
 
-# ==============================================================================
-# Rotation / nettoyage des résultats
-# ==============================================================================
+
 
 def clear_old_results(max_results: int = None):
-    """
-    Supprime les résultats les plus anciens si on dépasse max_results.
-    Utilise settings.storage.max_result_history si max_results=None.
-    """
+  
     if max_results is None:
         max_results = settings.storage.max_result_history
 
