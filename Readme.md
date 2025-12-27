@@ -137,6 +137,11 @@ These results are exploited in:
 
 ### 📊 Tableau de Bord : Pour comparer les différents modes d'éxecution 
 
+<img width="1880" height="860" alt="image" src="https://github.com/user-attachments/assets/8132b9a3-a963-4dc8-9225-89aa3d708c42" />
+
+<img width="1885" height="825" alt="image" src="https://github.com/user-attachments/assets/896b2881-6af7-453c-9d37-3a2e26229719" />
+
+
 ## 🧪 Benchmarking & Performance Analysis
 
 The project includes benchmarks to compare:
