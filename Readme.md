@@ -131,8 +131,11 @@ These results are exploited in:
 * Dashboards (Streamlit)
 * Plots (matplotlib)
 * Benchmarks and performance comparisons
+### 📊 Tableau de Bord : Pour comparer les différents modèles de diffusion (IC/SI/SIR/LT)
 
----
+<img width="1854" height="801" alt="image" src="https://github.com/user-attachments/assets/d0811db2-e6df-4f91-844b-c688e84e7262" />
+
+### 📊 Tableau de Bord : Pour comparer les différents modes d'éxecution 
 
 ## 🧪 Benchmarking & Performance Analysis
 
